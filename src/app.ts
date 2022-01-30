@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import express from "express";
 import { getOperations } from "./api/api";
 import { sendMail } from "./api/mail";
+import cron from "node-cron";
 
 //Load variables from .env file
 dotenv.config();
@@ -35,4 +36,17 @@ app.get("/send", (req, res) => {
 
 app.listen(port, () => {
   return console.log("Express is listening at http://localhost:" + port);
+});
+
+//Fires every minute
+cron.schedule("* * * * *", () => {
+  console.log("Executing scheduled job");
+  getOperations(bahnUrlHtml, bahnUrlApi, (operations) => {
+    // res.send(operations);
+    const result = operations.data.all.filter((operation) =>
+      operation.title.includes("Östersund" || "Lärbro")
+    );
+
+    console.log("Found", result || "nothing");
+  });
 });
