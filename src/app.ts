@@ -1,8 +1,7 @@
+import dotenv from "dotenv";
 import express from "express";
 import { getOperations } from "./api/api";
-import nodemailer from "nodemailer";
-import { MailOptions } from "nodemailer/lib/json-transport";
-import dotenv from "dotenv";
+import { sendMail } from "./api/mail";
 
 //Load variables from .env file
 dotenv.config();
@@ -18,32 +17,20 @@ app.get("/", (req, res) => {
 });
 
 app.get("/send", (req, res) => {
-  const mail = req.query.mail;
-  if(mail) {
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.SERVER_MAIL,
-        pass: process.env.SERVER_MAIL_PASS,
-      },
-    });
-  
-    const mailOptions: MailOptions = {
-      from: process.env.SERVER_MAIL,
-      to: mail as string,
-      subject: "nodemailer test",
-      text: "Hello world!",
-    };
-  
-    transporter.sendMail(mailOptions, (error, info) => {
+  sendMail(
+    {
+      user: process.env.SERVER_MAIL,
+      pass: process.env.SERVER_MAIL_PASS,
+    },
+    req.query.mail as string,
+    (error, info) => {
       if (error) {
         res.send(error);
       } else {
         res.send("Mail sent! " + info.response);
       }
-    });
-  }
-  // res.send("Hello world");
+    }
+  );
 });
 
 app.listen(port, () => {
