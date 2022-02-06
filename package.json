@@ -1,7 +1,7 @@
 {
   "name": "bahnhof-drift-watchdog",
-  "displayName": "Amon Dîn",
-  "description": "Amon Dîn, one of the oldest and first beacon to be lit when Gondor needs aid. This service is meant to warn subscribers when there is a planned outage in their area.",
+  "displayName": "Warnum",
+  "description": "Warnum, elfdalian for 'we warn'. A service to notify users of scheduled or active downtime as listed by the ISP Bahnhof.",
   "author": "Freddie Lust-Hed",
   "version": "1.0.0",
   "main": "dist/app.js",
