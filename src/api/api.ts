@@ -1,5 +1,6 @@
 import axios from "axios"
 import scraper from "open-graph-scraper"
+import TurndownService from "turndown"
 import { NetworkResponse } from "../types/network"
 import { OperationsResponse } from "../types/operation"
 import { Network as MinimalNetwork, ProductsResponse } from "../types/product"
@@ -169,6 +170,7 @@ export const getOperations = (
 }
 
 export const sendWebhook = async (message: string) => {
+  const turndownService = new TurndownService({ headingStyle: "atx" })
   const webhookUrl = process.env.WEBHOOK_URL
   if (!webhookUrl) return
   try {
@@ -176,7 +178,7 @@ export const sendWebhook = async (message: string) => {
       webhookUrl,
       {
         username: "Bahnhof Watchdog",
-        content: message,
+        content: turndownService.turndown(message),
       },
       {
         headers: {

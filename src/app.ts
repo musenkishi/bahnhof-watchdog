@@ -2,7 +2,10 @@ import dotenv from "dotenv"
 import express from "express"
 import { getProducts, getOperations, sendWebhook } from "./api/api"
 import { sendMail } from "./api/mail"
-import { generateMessage } from "./util/message"
+import {
+  generateOutageMessage,
+  generateSubscriptionMessage,
+} from "./util/message"
 import { findProductAndConvertWithReduce as getListedSubscription } from "./util/product"
 import cron from "node-cron"
 
@@ -17,36 +20,9 @@ const currentSubscription = {
 }
 
 app.get("/", (req, res) => {
-  // getOperations(process.env.POSTAL_CODE, (operations) => {
-  //   res.send(operations)
-  // })
-
-  getProducts(process.env.ADDRESS, (result) => {
-    const listedSubscription = getListedSubscription(
-      result.data.products,
-      currentSubscription.name
-    )
-
-    if (!listedSubscription) {
-      res.send(
-        "No subscriptions matches your current subscription or none are available on your address"
-      )
-      return
-    }
-
-    if (listedSubscription.price < currentSubscription.price) {
-      const message = generateMessage(currentSubscription, listedSubscription)
-      const response = {
-        message: message,
-        currentSubscription: currentSubscription,
-        availableSubscrition: listedSubscription,
-      }
-      res.send(response)
-      sendWebhook(message)
-      return
-    }
-
-    res.send(result)
+  doPatrol((message) => {
+    sendWebhook(message)
+    res.send(message)
   })
 })
 
@@ -71,26 +47,43 @@ app.listen(port, () => {
   return console.log("Express is listening at http://localhost:" + port)
 })
 
-//Fires every minute
-cron.schedule("* * * * *", () => {
-    console.log("cron schedule running")
-//   runOperationsTest();
-});
+const cronInterval = process.env.CRON_SCHEDULE
 
-const runOperationsTest = () => {
-  console.log("Executing scheduled job")
-  getOperations(process.env.POSTAL_CODE, (operations) => {
-    return operations
-    // const result = operations.data.all.filter((operation) =>
-    //   operation.title.includes("Östersund" || "Lärbro")
-    // )
-
-    // console.log("Found", result || "nothing")
-    console.log("Result:")
-    console.log(JSON.stringify(operations.data.all))
+if (cronInterval) {
+  cron.schedule(cronInterval, () => {
+    console.log("cron schedule running with interval: " + cronInterval)
+    // TODO: doPatrol() but only after you save what message has already been sent
   })
 }
-// function runOperationsTest() {
-// }
 
-// runOperationsTest()
+const doPatrol = (callback: (message: string) => void) => {
+  getOperations(process.env.POSTAL_CODE, (operations) => {
+    const currentOutages = operations.data.open
+    const plannedOutages = operations.data.future
+    if (currentOutages.length > 0 || plannedOutages.length > 0) {
+      const message = generateOutageMessage(currentOutages, plannedOutages)
+      callback(message)
+    }
+  })
+
+  getProducts(process.env.ADDRESS, (result) => {
+    const listedSubscription = getListedSubscription(
+      result.data.products,
+      currentSubscription.name
+    )
+
+    if (!listedSubscription) {
+      callback(
+        "No subscriptions matches your current subscription or none are available on your address"
+      )
+    }
+
+    if (listedSubscription.price < currentSubscription.price) {
+      const message = generateSubscriptionMessage(
+        currentSubscription,
+        listedSubscription
+      )
+      callback(message)
+    }
+  })
+}
