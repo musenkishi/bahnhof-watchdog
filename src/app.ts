@@ -2,6 +2,8 @@ import dotenv from "dotenv"
 import express from "express"
 import { getProducts, getOperations, sendWebhook } from "./api/api"
 import { sendMail } from "./api/mail"
+import { generateMessage } from "./util/message"
+import { findProductAndConvertWithReduce as getListedSubscription } from "./util/product"
 import cron from "node-cron"
 
 //Load variables from .env file
@@ -20,25 +22,27 @@ app.get("/", (req, res) => {
   // })
 
   getProducts(process.env.ADDRESS, (result) => {
-    const findSubscription = result.data.products.find((product) =>
-      product.internalTitle.includes(currentSubscription.name)
+    const listedSubscription = getListedSubscription(
+      result.data.products,
+      currentSubscription.name
     )
-    if (!findSubscription) {
+
+    if (!listedSubscription) {
       res.send(
         "No subscriptions matches your current subscription or none are available on your address"
       )
       return
     }
 
-    if (findSubscription.price < currentSubscription.price) {
+    if (listedSubscription.price < currentSubscription.price) {
+      const message = generateMessage(currentSubscription, listedSubscription)
       const response = {
-        message:
-          "Your current subscription is priced higher than it is on bahnhof's website. Contact them for a price reduction!",
+        message: message,
         currentSubscription: currentSubscription,
-        availableSubscrition: findSubscription,
+        availableSubscrition: listedSubscription,
       }
       res.send(response)
-      sendWebhook(response.message)
+      sendWebhook(message)
       return
     }
 
@@ -67,11 +71,11 @@ app.listen(port, () => {
   return console.log("Express is listening at http://localhost:" + port)
 })
 
-// //Fires every minute
-// cron.schedule("* * * * *", () => {
-
+//Fires every minute
+cron.schedule("* * * * *", () => {
+    console.log("cron schedule running")
 //   runOperationsTest();
-// });
+});
 
 const runOperationsTest = () => {
   console.log("Executing scheduled job")
