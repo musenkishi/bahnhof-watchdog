@@ -1,13 +1,13 @@
-import { ErrorResult, SuccessResult } from "open-graph-scraper";
+import { ErrorResult, SuccessResult } from "open-graph-scraper"
 
 export type ScraperResults = (SuccessResult | ErrorResult) & {
-  token: string;
-};
+  token: string
+}
 
 export type ScraperResponse = {
-  headers: ResponseHeaders;
-};
+  headers: ResponseHeaders
+}
 
 export type ResponseHeaders = {
-  "set-cookie": string[];
-};
+  "set-cookie": string[]
+}

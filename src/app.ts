@@ -1,21 +1,48 @@
-import dotenv from "dotenv";
-import express from "express";
-import { getOperations } from "./api/api";
-import { sendMail } from "./api/mail";
-import cron from "node-cron";
+import dotenv from "dotenv"
+import express from "express"
+import { getProducts, getOperations } from "./api/api"
+import { sendMail } from "./api/mail"
+import cron from "node-cron"
 
 //Load variables from .env file
-dotenv.config();
-const app = express();
-const port = 3000;
-const bahnUrlHtml = "https://bahnhof.se/kundservice/driftinfo";
-const bahnUrlApi = "https://bahnhof.se/ajax/kundservice/driftinfo";
+dotenv.config()
+const app = express()
+const port = 3000
+
+const currentSubscription = {
+  name: process.env.CURRENT_PRODUCT,
+  price: Number.parseInt(process.env.CURRENT_PRICE),
+}
 
 app.get("/", (req, res) => {
-  getOperations(bahnUrlHtml, bahnUrlApi, (operations) => {
-    res.send(operations);
-  });
-});
+  // getOperations(process.env.POSTAL_CODE, (operations) => {
+  //   res.send(operations)
+  // })
+
+  getProducts(process.env.ADDRESS, (result) => {
+    const findSubscription = result.data.products.find((product) =>
+      product.internalTitle.includes(currentSubscription.name)
+    )
+    if (!findSubscription) {
+      res.send(
+        "No subscriptions matches your current subscription or none are available on your address"
+      )
+      return
+    }
+
+    if (findSubscription.price < currentSubscription.price) {
+      res.send({
+        message:
+          "Your current subscription is priced higher than it is on bahnhof's website. Contact them for a price reduction!",
+        currentSubscription: currentSubscription,
+        availableSubscrition: findSubscription,
+      })
+      return
+    }
+
+    res.send(result)
+  })
+})
 
 app.get("/send", (req, res) => {
   sendMail(
@@ -26,27 +53,38 @@ app.get("/send", (req, res) => {
     req.query.mail as string,
     (error, info) => {
       if (error) {
-        res.send(error);
+        res.send(error)
       } else {
-        res.send("Mail sent! " + info.response);
+        res.send("Mail sent! " + info.response)
       }
     }
-  );
-});
+  )
+})
 
 app.listen(port, () => {
-  return console.log("Express is listening at http://localhost:" + port);
-});
+  return console.log("Express is listening at http://localhost:" + port)
+})
 
-//Fires every minute
-cron.schedule("* * * * *", () => {
-  console.log("Executing scheduled job");
-  getOperations(bahnUrlHtml, bahnUrlApi, (operations) => {
-    // res.send(operations);
-    const result = operations.data.all.filter((operation) =>
-      operation.title.includes("Östersund" || "Lärbro")
-    );
+// //Fires every minute
+// cron.schedule("* * * * *", () => {
 
-    console.log("Found", result || "nothing");
-  });
-});
+//   runOperationsTest();
+// });
+
+const runOperationsTest = () => {
+  console.log("Executing scheduled job")
+  getOperations(process.env.POSTAL_CODE, (operations) => {
+    return operations
+    // const result = operations.data.all.filter((operation) =>
+    //   operation.title.includes("Östersund" || "Lärbro")
+    // )
+
+    // console.log("Found", result || "nothing")
+    console.log("Result:")
+    console.log(JSON.stringify(operations.data.all))
+  })
+}
+// function runOperationsTest() {
+// }
+
+// runOperationsTest()
