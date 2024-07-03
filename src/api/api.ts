@@ -1,6 +1,6 @@
 import axios from "axios"
 import scraper from "open-graph-scraper"
-import { Network, NetworkResponse } from "../types/network"
+import { NetworkResponse } from "../types/network"
 import { OperationsResponse } from "../types/operation"
 import { Network as MinimalNetwork, ProductsResponse } from "../types/product"
 import { ScraperResponse, ScraperResults } from "../types/scraper"
@@ -66,7 +66,7 @@ const getOperationsStatus = async (
     })
     callback(response.data)
   } catch (err) {
-    console.error(err.toJSON() || err)
+    console.error(err)
   }
 }
 
@@ -93,7 +93,7 @@ const getAvailableNetworks = async (
     )
     callback(response.data)
   } catch (err) {
-    console.error(err.toJSON() || err)
+    console.error(err)
   }
 }
 
@@ -120,7 +120,7 @@ const getAvailableProducts = async (
     )
     callback(response.data)
   } catch (err) {
-    console.error(err.toJSON() || err)
+    console.error(err)
   }
 }
 
@@ -166,4 +166,25 @@ export const getOperations = (
   getTokens(tokenUrl, (csrfToken: string, cookieSession: string) => {
     getOperationsStatus(apiUrl, csrfToken, cookieSession, callback)
   })
+}
+
+export const sendWebhook = async (message: string) => {
+  const webhookUrl = process.env.WEBHOOK_URL
+  if (!webhookUrl) return
+  try {
+    await axios.post(
+      webhookUrl,
+      {
+        username: "Bahnhof Watchdog",
+        content: message,
+      },
+      {
+        headers: {
+          "Content-type": "application/json",
+        },
+      }
+    )
+  } catch (err) {
+    console.error(err)
+  }
 }

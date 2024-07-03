@@ -1,6 +1,6 @@
 import dotenv from "dotenv"
 import express from "express"
-import { getProducts, getOperations } from "./api/api"
+import { getProducts, getOperations, sendWebhook } from "./api/api"
 import { sendMail } from "./api/mail"
 import cron from "node-cron"
 
@@ -31,12 +31,14 @@ app.get("/", (req, res) => {
     }
 
     if (findSubscription.price < currentSubscription.price) {
-      res.send({
+      const response = {
         message:
           "Your current subscription is priced higher than it is on bahnhof's website. Contact them for a price reduction!",
         currentSubscription: currentSubscription,
         availableSubscrition: findSubscription,
-      })
+      }
+      res.send(response)
+      sendWebhook(response.message)
       return
     }
 
