@@ -15,7 +15,7 @@ export const generateOutageMessage = (
 
   if (currentOutages.length > 0) {
     const currentString = `
-    There are ${currentOutages.length} outages in you area at the moment:
+    There are ${currentOutages.length} outages in your area at the moment:
     ${renderOutages(currentOutages)}`
     array.push(currentString)
   }

@@ -1,5 +1,4 @@
 import dotenv from "dotenv"
-import express from "express"
 import { getProducts, getOperations, sendWebhook } from "./api/api"
 import { sendMail } from "./api/mail"
 import {
@@ -8,59 +7,28 @@ import {
 } from "./util/message"
 import { findProductAndConvertWithReduce as getListedSubscription } from "./util/product"
 import cron from "node-cron"
+import { loadBuffer, loadFile, syncBuffer, syncFile } from "./api/file"
 
 //Load variables from .env file
 dotenv.config()
-const app = express()
-const port = 3000
 
 const currentSubscription = {
   name: process.env.CURRENT_PRODUCT,
   price: Number.parseInt(process.env.CURRENT_PRICE),
 }
 
-app.get("/", (req, res) => {
-  doPatrol((message) => {
-    console.log(
-      "Watchdog noticed something! Notifying user with message:",
-      message
-    )
-    sendWebhook(message)
-    res.send(message)
-  })
-})
-
-app.get("/send", (req, res) => {
-  sendMail(
-    {
-      user: process.env.SERVER_MAIL,
-      pass: process.env.SERVER_MAIL_PASS,
-    },
-    req.query.mail as string,
-    (error, info) => {
-      if (error) {
-        res.send(error)
-      } else {
-        res.send("Mail sent! " + info.response)
-      }
-    }
-  )
-})
-
-app.listen(port, () => {
-  return console.log("Express is listening at http://localhost:" + port)
-})
-
 const cronInterval = process.env.CRON_SCHEDULE
 
 if (cronInterval) {
   cron.schedule(cronInterval, () => {
     console.log("cron schedule running with interval: " + cronInterval)
-    // TODO: doPatrol() but only after you save what message has already been sent
+    doPatrol((report) => {
+      sendReport(report)
+    })
   })
 }
 
-const doPatrol = async (callback: (message: string) => void) => {
+const doPatrol = async (callback: (report: string) => void) => {
   console.log("Watchdog started its patrol.")
 
   const operationPromise = new Promise<void>((resolve, reject) => {
@@ -89,7 +57,6 @@ const doPatrol = async (callback: (message: string) => void) => {
       }
 
       if (listedSubscription.price < currentSubscription.price) {
-        console.log("Generating subscription message...")
         const message = generateSubscriptionMessage(
           currentSubscription,
           listedSubscription
@@ -103,4 +70,32 @@ const doPatrol = async (callback: (message: string) => void) => {
   await Promise.all([operationPromise, productsPromise])
 
   console.log("Watchdog has completed its patrol.")
+}
+
+const MAX_BUFFER_SIZE = 100
+
+const sendReport = async (report: string) => {
+  if (!report) return
+
+  // const bufferFileName = "watchdog_buffer.json"
+  const file = await loadBuffer()
+  const reportBuffer = file instanceof Map ? file : new Map()
+
+  if (reportBuffer.has(report)) {
+    console.log("Report already sent. Ignoring...")
+  } else {
+    console.log("New report!")
+    reportBuffer.set(report, null) // Only interested in key insertion
+
+    if (reportBuffer.size > MAX_BUFFER_SIZE) {
+      const oldestKey = reportBuffer.keys().next().value
+      reportBuffer.delete(oldestKey)
+    }
+
+    // syncFile(bufferFileName, [...reportBuffer])
+    syncBuffer(reportBuffer)
+
+    sendWebhook(report)
+    sendMail(report)
+  }
 }
