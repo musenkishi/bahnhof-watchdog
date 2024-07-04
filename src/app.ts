@@ -8,6 +8,7 @@ import {
 import { findProductAndConvertWithReduce as getListedSubscription } from "./util/product"
 import cron from "node-cron"
 import { handleBuffer } from "./util/buffer"
+import cronstrue from "cronstrue"
 
 //Load variables from .env file
 dotenv.config()
@@ -19,7 +20,7 @@ const currentSubscription = {
 }
 
 const doPatrol = async (callback: (report: string) => void) => {
-  console.log("Watchdog started its patrol.")
+  console.log("Watchdog started its patrol...")
 
   const zonePromises = []
 
@@ -91,8 +92,8 @@ const sendReport = (report: string) => {
 }
 
 if (CRON_SCHEDULE) {
+  console.log("Scheduling patrol: ", cronstrue.toString(CRON_SCHEDULE))
   cron.schedule(CRON_SCHEDULE, () => {
-    console.log("cron schedule running with interval: " + CRON_SCHEDULE)
     doPatrol((report) => {
       sendReport(report)
     })
