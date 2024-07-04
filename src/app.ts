@@ -20,7 +20,7 @@ const currentSubscription = {
 }
 
 const doPatrol = async (callback: (report: string) => void) => {
-  console.log("Watchdog started its patrol...")
+  console.log("Starting patrol...")
 
   const zonePromises = []
 
@@ -79,25 +79,39 @@ const doPatrol = async (callback: (report: string) => void) => {
     )
   }
   await Promise.all(zonePromises)
-  console.log("Watchdog has completed its patrol.")
+  console.log("Patrol finished.")
 }
 
-const sendReport = (report: string) => {
+const sendReport = (report: string, skipBuffer?: boolean) => {
   if (!report) return
 
-  handleBuffer(report, () => {
-    sendWebhook(report)
-    sendMail(report)
-  })
+  const sendMessage = (message: string) => {
+    sendWebhook(message)
+    sendMail(message)
+  }
+
+  if (skipBuffer) {
+    sendMessage(report)
+  } else {
+    handleBuffer(report, () => {
+      sendMessage(report)
+    })
+  }
 }
 
 if (CRON_SCHEDULE) {
-  console.log("Scheduling patrol: ", cronstrue.toString(CRON_SCHEDULE))
   cron.schedule(CRON_SCHEDULE, () => {
     doPatrol((report) => {
       sendReport(report)
     })
   })
+  const startMessage =
+    "Watchdog will start patrolling with an interval of " +
+    cronstrue.toString(CRON_SCHEDULE).toLowerCase()
+  console.log(startMessage)
+  if (process.env.SEND_STARTUP_MESSAGE == "true") {
+    sendReport(startMessage, true)
+  }
 } else {
   // no cron schedule set, run patrol once if possible
   doPatrol((report) => {

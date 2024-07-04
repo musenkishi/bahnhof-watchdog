@@ -51,7 +51,7 @@ MAIL_RECEIVER="example.receiver@gmail.com"
           - data:/data
         restart: unless-stopped
         env_file:
-          - ".env"
+          - .env
     
     volumes:
       data:
