@@ -2,8 +2,7 @@ import { constants, writeFileSync } from "fs"
 import { access, mkdir, readFile } from "fs/promises"
 import { join } from "path"
 
-const DATA_PATH = "dist/data"
-const FILENAME_BUFFER = "watchdog_buffer.json"
+const DATA_PATH = "data"
 
 export const loadFile = async (filename: string) => {
   try {
@@ -38,26 +37,4 @@ export const syncFile = (filename: string, data: unknown) => {
   const filePath = join(DATA_PATH, filename)
   console.log("syncing file", filename, " to ", filePath, ", data:", data)
   writeFileSync(join(DATA_PATH, filename), JSON.stringify(data), "utf-8")
-}
-
-export const syncBuffer = (buffer: Map<string, unknown>) => {
-  syncFile(FILENAME_BUFFER, [...buffer])
-}
-
-export const loadBuffer = async () => {
-  try {
-    const data = await loadFile(FILENAME_BUFFER)
-    const parsedData = JSON.parse(data)
-    if (Array.isArray(parsedData)) {
-      return new Map(parsedData)
-    } else {
-      console.error(
-        `Unexpected data format: expected an array but got ${typeof parsedData}`
-      )
-      return new Map()
-    }
-  } catch (err) {
-    console.error("Error loading buffer:", err)
-    throw err
-  }
 }

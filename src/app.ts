@@ -7,7 +7,7 @@ import {
 } from "./util/message"
 import { findProductAndConvertWithReduce as getListedSubscription } from "./util/product"
 import cron from "node-cron"
-import { loadBuffer, loadFile, syncBuffer, syncFile } from "./api/file"
+import { handleBuffer } from "./util/buffer"
 
 //Load variables from .env file
 dotenv.config()
@@ -72,30 +72,11 @@ const doPatrol = async (callback: (report: string) => void) => {
   console.log("Watchdog has completed its patrol.")
 }
 
-const MAX_BUFFER_SIZE = 100
-
-const sendReport = async (report: string) => {
+const sendReport = (report: string) => {
   if (!report) return
 
-  // const bufferFileName = "watchdog_buffer.json"
-  const file = await loadBuffer()
-  const reportBuffer = file instanceof Map ? file : new Map()
-
-  if (reportBuffer.has(report)) {
-    console.log("Report already sent. Ignoring...")
-  } else {
-    console.log("New report!")
-    reportBuffer.set(report, null) // Only interested in key insertion
-
-    if (reportBuffer.size > MAX_BUFFER_SIZE) {
-      const oldestKey = reportBuffer.keys().next().value
-      reportBuffer.delete(oldestKey)
-    }
-
-    // syncFile(bufferFileName, [...reportBuffer])
-    syncBuffer(reportBuffer)
-
+  handleBuffer(report, () => {
     sendWebhook(report)
     sendMail(report)
-  }
+  })
 }
