@@ -6,6 +6,10 @@ import { OperationsResponse } from "../types/operation"
 import { Network as MinimalNetwork, ProductsResponse } from "../types/product"
 import { ScraperResponse, ScraperResults } from "../types/scraper"
 
+const api = axios.create({
+  timeout: 30000,
+})
+
 const tokenUrl = "https://bahnhof.se/kundservice/driftinfo"
 const apiOperationsUrl = "https://bahnhof.se/ajax/kundservice/driftinfo"
 const apiNetworksUrl = "https://bahnhof.se/ajax/search/networks"
@@ -58,7 +62,7 @@ const getOperationsStatus = async (
   callback: (operations: OperationsResponse) => void
 ) => {
   try {
-    const response = await axios.get(url, {
+    const response = await api.get(url, {
       headers: {
         Cookie: "PHPSESSID=" + sessionId,
         "X-CSRF-TOKEN": token,
@@ -79,7 +83,7 @@ const getAvailableNetworks = async (
   callback: (response: NetworkResponse) => void
 ) => {
   try {
-    const response = await axios.post(
+    const response = await api.post(
       url,
       {
         address: address,
@@ -106,7 +110,7 @@ const getAvailableProducts = async (
   callback: (response: ProductsResponse) => void
 ) => {
   try {
-    const response = await axios.post(
+    const response = await api.post(
       url,
       {
         networks: networks,
@@ -163,18 +167,18 @@ export const getOperations = (
   callback: (operations: OperationsResponse) => void
 ) => {
   const apiUrl = apiOperationsUrl + "/" + postalCode
-  console.log("getOperations: ", apiUrl)
   getTokens(tokenUrl, (csrfToken: string, cookieSession: string) => {
     getOperationsStatus(apiUrl, csrfToken, cookieSession, callback)
   })
 }
 
 export const sendWebhook = async (message: string) => {
+  console.log("Sending webhook")
   const turndownService = new TurndownService({ headingStyle: "atx" })
   const webhookUrl = process.env.WEBHOOK_URL
   if (!webhookUrl) return
   try {
-    await axios.post(
+    await api.post(
       webhookUrl,
       {
         username: "Bahnhof Watchdog",

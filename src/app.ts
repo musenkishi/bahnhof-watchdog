@@ -21,6 +21,10 @@ const currentSubscription = {
 
 app.get("/", (req, res) => {
   doPatrol((message) => {
+    console.log(
+      "Watchdog noticed something! Notifying user with message:",
+      message
+    )
     sendWebhook(message)
     res.send(message)
   })
@@ -56,34 +60,47 @@ if (cronInterval) {
   })
 }
 
-const doPatrol = (callback: (message: string) => void) => {
-  getOperations(process.env.POSTAL_CODE, (operations) => {
-    const currentOutages = operations.data.open
-    const plannedOutages = operations.data.future
-    if (currentOutages.length > 0 || plannedOutages.length > 0) {
-      const message = generateOutageMessage(currentOutages, plannedOutages)
-      callback(message)
-    }
+const doPatrol = async (callback: (message: string) => void) => {
+  console.log("Watchdog started its patrol.")
+
+  const operationPromise = new Promise<void>((resolve, reject) => {
+    getOperations(process.env.POSTAL_CODE, (operations) => {
+      const currentOutages = operations.data.open
+      const plannedOutages = operations.data.future
+      if (currentOutages.length > 0 || plannedOutages.length > 0) {
+        const message = generateOutageMessage(currentOutages, plannedOutages)
+        callback(message)
+      }
+      resolve()
+    })
   })
 
-  getProducts(process.env.ADDRESS, (result) => {
-    const listedSubscription = getListedSubscription(
-      result.data.products,
-      currentSubscription.name
-    )
-
-    if (!listedSubscription) {
-      callback(
-        "No subscriptions matches your current subscription or none are available on your address"
+  const productsPromise = new Promise<void>((resolve, reject) => {
+    getProducts(process.env.ADDRESS, (result) => {
+      const listedSubscription = getListedSubscription(
+        result.data.products,
+        currentSubscription.name
       )
-    }
 
-    if (listedSubscription.price < currentSubscription.price) {
-      const message = generateSubscriptionMessage(
-        currentSubscription,
-        listedSubscription
-      )
-      callback(message)
-    }
+      if (!listedSubscription) {
+        callback(
+          "No subscriptions matches your current subscription or none are available on your address"
+        )
+      }
+
+      if (listedSubscription.price < currentSubscription.price) {
+        console.log("Generating subscription message...")
+        const message = generateSubscriptionMessage(
+          currentSubscription,
+          listedSubscription
+        )
+        callback(message)
+      }
+      resolve()
+    })
   })
+
+  await Promise.all([operationPromise, productsPromise])
+
+  console.log("Watchdog has completed its patrol.")
 }

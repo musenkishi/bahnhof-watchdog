@@ -37,7 +37,7 @@ export type Network = {
 export type Product = {
   type: string
   discount: Discount
-  bundle: any | null
+  bundle: unknown | null
   contractPeriod: number
   cancellationTime: number
   campaign: Campaign

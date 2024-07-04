@@ -1,13 +1,15 @@
 {
-  "name": "bahnhof-drift-watchdog",
-  "displayName": "Warnum",
-  "description": "Warnum, elfdalian for 'we warn'. A service to notify users of scheduled or active downtime as listed by the ISP Bahnhof.",
+  "name": "bahnhof-watchdog",
+  "displayName": "Bahnhof Watchdog",
+  "description": "A service that notifies you of changed subscription prices or scheduled/active downtime as listed by the ISP Bahnhof.",
   "author": "Freddie Lust-Hed",
   "version": "1.0.0",
   "main": "dist/app.js",
   "license": "MIT",
   "scripts": {
-    "start": "tsc && node dist/app.js",
+    "build": "tsc",
+    "dev": "tsc && node dist/app.js",
+    "start": "node dist/app.js",
     "lint": "eslint . --ext .ts"
   },
   "devDependencies": {
@@ -29,8 +31,6 @@
     "axios": "^0.25.0",
     "dotenv": "^14.3.2",
     "express": "^4.17.2",
-    "html-metadata": "^1.7.1",
-    "html-metadata-parser": "^2.0.4",
     "node-cron": "^3.0.0",
     "nodemailer": "^6.7.2",
     "open-graph-scraper": "^4.11.0",
