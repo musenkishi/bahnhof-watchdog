@@ -1,0 +1,21 @@
+services:
+  bahnhof-watchdog:
+    image: bahnhof-watchdog
+    ports:
+      - "3000:3000"
+    volumes:
+      - data:/data
+    restart: unless-stopped
+    environment:
+      MAIL_SENDER: example.sender@gmail.com # optional
+      MAIL_SENDER_PASS: examplepassword123 # optional
+      MAIL_RECEIVER: example.receiver@gmail.com # optional
+      CRON_SCHEDULE: "0 * * * * *" # Every hour.
+      POSTAL_CODE: 12345
+      ADDRESS: Examplestreet 1A, 12345 Examplecity
+      CURRENT_PRODUCT: 250/250 # In Mbit down/up e.g. 100/10, 250/250, 1000/1000...
+      CURRENT_PRICE: 799 
+      WEBHOOK_URL: https://example.com/api/webhooks/examplewebhookid # Discord bot webhook URL
+
+volumes:
+  data:

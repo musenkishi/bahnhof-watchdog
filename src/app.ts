@@ -77,9 +77,7 @@ const doPatrol = async (callback: (report: string) => void) => {
       })
     )
   }
-
   await Promise.all(zonePromises)
-
   console.log("Watchdog has completed its patrol.")
 }
 

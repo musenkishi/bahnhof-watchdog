@@ -6,7 +6,9 @@ export const sendMail = (report: string) => {
   const senderPassword = process.env.MAIL_SENDER_PASS
   const receiver = process.env.MAIL_RECEIVER
   if (!sender || !senderPassword || !receiver) {
-    console.log("No mail credentials provided, not sending mail.")
+    console.log(
+      "Environment variables MAIL_SENDER, MAIL_SENDER_PASS, and MAIL_RECEIVER missing. Skipping sending mail..."
+    )
     return
   }
   console.log("Sending mail")
