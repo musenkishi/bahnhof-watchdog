@@ -1,13 +1,13 @@
 services:
   bahnhof-watchdog:
-    image: bahnhof-watchdog
+    image: musenkishi/bahnhof-watchdog:latest
     ports:
       - 3000:3000
     volumes:
       - data:/data
     restart: unless-stopped
     env_file:
-      - ".env"
+      - .env
 
 volumes:
   data:
