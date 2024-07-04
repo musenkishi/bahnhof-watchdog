@@ -10,10 +10,12 @@ const api = axios.create({
   timeout: 30000,
 })
 
-const tokenUrl = "https://bahnhof.se/kundservice/driftinfo"
-const apiOperationsUrl = "https://bahnhof.se/ajax/kundservice/driftinfo"
-const apiNetworksUrl = "https://bahnhof.se/ajax/search/networks"
-const apiProductsUrl = "https://bahnhof.se/ajax/bredband/products"
+const baseUrl = new URL("https://bahnhof.se")
+const apiBaseUrl = new URL("ajax/", baseUrl)
+const tokenUrl = new URL("kundservice/driftinfo", baseUrl).toString()
+const apiOperationsUrl = new URL("kundservice/driftinfo", apiBaseUrl).toString()
+const apiNetworksUrl = new URL("search/networks", apiBaseUrl).toString()
+const apiProductsUrl = new URL("bredband/products", apiBaseUrl).toString()
 
 const getSessionId = (cookies: string[]) => {
   const splitCookies = cookies.map((cookieString) => {
