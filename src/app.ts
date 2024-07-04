@@ -109,7 +109,9 @@ if (CRON_SCHEDULE) {
     "Watchdog will start patrolling with an interval of " +
     cronstrue.toString(CRON_SCHEDULE).toLowerCase()
   console.log(startMessage)
-  sendReport(startMessage, true)
+  if (process.env.SEND_STARTUP_MESSAGE == "true") {
+    sendReport(startMessage, true)
+  }
 } else {
   // no cron schedule set, run patrol once if possible
   doPatrol((report) => {

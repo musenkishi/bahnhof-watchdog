@@ -35,6 +35,6 @@ export const loadFile = async (filename: string) => {
 
 export const syncFile = (filename: string, data: unknown) => {
   const filePath = join(DATA_PATH, filename)
-  console.log("syncing file", filename, " to ", filePath, ", data:", data)
+  console.log("Syncing file", filename, "to", filePath)
   writeFileSync(join(DATA_PATH, filename), JSON.stringify(data), "utf-8")
 }
