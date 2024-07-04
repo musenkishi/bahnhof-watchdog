@@ -1,10 +1,8 @@
 import axios from "axios"
-import scraper from "open-graph-scraper"
 import TurndownService from "turndown"
 import { NetworkResponse } from "../types/network"
 import { OperationsResponse } from "../types/operation"
 import { Network as MinimalNetwork, ProductsResponse } from "../types/product"
-import { ScraperResponse, ScraperResults } from "../types/scraper"
 
 const api = axios.create({
   timeout: 30000,
@@ -28,33 +26,36 @@ const getSessionId = (cookies: string[]) => {
   return sessionCookie.PHPSESSID || false
 }
 
+const findToken = (data: any) => {
+  const tokenName = "csrf-token"
+  const regex = new RegExp(`<meta[^>]*name=["']?${tokenName}["']?[^>]*>`, "i")
+  const match = data.match(regex)
+
+  const tokenTag = match && match[0]
+  if (!tokenTag) return
+
+  const contentRegex = /content=["']([^"']*)["']/i
+  const contentMatch = tokenTag.match(contentRegex)
+
+  const token = contentMatch && contentMatch[1]
+  if (!token) return
+  return token
+}
+
 const getTokens = async (
   url: string,
   callback: (csrfToken: string, cookieSession: string) => void
 ) => {
-  const tokenName = "csrf-token"
-  scraper(
-    {
-      url,
-      customMetaTags: [
-        {
-          multiple: false,
-          property: tokenName,
-          fieldName: "token",
-        },
-      ],
-    },
-    (error: boolean, results: ScraperResults, response: unknown) => {
-      const typesafeRes = response as ScraperResponse
-      if (!error && typesafeRes) {
-        const cookies = typesafeRes.headers["set-cookie"]
-        const sessionId = getSessionId(cookies)
-        callback(results.token, sessionId)
-      } else {
-        console.error("Something went wrong while fetching status")
-      }
+  api.get(url).then((result) => {
+    const token = findToken(result.data)
+    const cookies = result.headers["set-cookie"]
+    const sessionId = getSessionId(cookies)
+    if (!Array.isArray(token)) {
+      callback(token, sessionId)
+    } else {
+      throw new Error("Token is not a string")
     }
-  )
+  })
 }
 
 const getOperationsStatus = async (
