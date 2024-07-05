@@ -16,6 +16,8 @@ Before running the service, you'll need to set up the following environment vari
 # Runs every hour. crontab.cronhub.io can be used to generate another interval
 CRON_SCHEDULE="0 * * * *" 
 
+SEND_STARTUP_MESSAGE=true # set to false to avoid getting notified when the service starts
+
 # Outage check
 POSTAL_CODE="12345"
 
@@ -23,6 +25,7 @@ POSTAL_CODE="12345"
 ADDRESS="ExampleStreet 1A, 12345 ExampleCity"
 CURRENT_SPEED="250/250" # In Mbit down/up e.g. 100/10, 250/250, 1000/1000...
 CURRENT_PRICE="500"
+LOG_PRICES=true # log price changes in a csv file
 
 # Notifications
 WEBHOOK_URL="https://..." # Only tested with Discord Webhook bot

@@ -1,31 +1,40 @@
-import { constants, writeFileSync } from "node:fs"
-import { access, mkdir, readFile } from "node:fs/promises"
+import { writeFileSync } from "node:fs"
+import {
+  access,
+  appendFile,
+  mkdir,
+  readFile,
+  writeFile,
+} from "node:fs/promises"
 import { join } from "path"
 
 const DATA_PATH = "data"
+const FILE_ENCODING = "utf-8"
+
+const getFilePath = (filename: string): string => join(DATA_PATH, filename)
 
 export const loadFile = async (filename: string) => {
   try {
     await mkdir(DATA_PATH, { recursive: true })
   } catch (err) {
-    if (err) console.error(err)
+    console.error(err)
   }
 
-  const filePath = join(DATA_PATH, filename)
+  const filePath = getFilePath(filename)
 
-  try {
-    await access(filePath, constants.F_OK)
-  } catch (err) {
-    try {
-      writeFileSync(filePath, "", "utf-8")
-      console.log("File created", filePath)
-    } catch (err) {
-      console.error("Error creating file", err.message)
+  fileExists(filename).then((exists) => {
+    if (!exists) {
+      try {
+        writeFileSync(filePath, "", FILE_ENCODING)
+        console.log("File created", filePath)
+      } catch (err) {
+        console.error("Error creating file", err.message)
+      }
     }
-  }
+  })
 
   try {
-    const data = await readFile(filePath, "utf-8")
+    const data = await readFile(filePath, FILE_ENCODING)
     return data
   } catch (err) {
     console.error(`Error reading file: ${err.message}`)
@@ -34,7 +43,24 @@ export const loadFile = async (filename: string) => {
 }
 
 export const syncFile = (filename: string, data: unknown) => {
-  const filePath = join(DATA_PATH, filename)
-  console.log("Syncing file", filename, "to", filePath)
-  writeFileSync(join(DATA_PATH, filename), JSON.stringify(data), "utf-8")
+  console.log("Syncing file", filename, "to", getFilePath(filename))
+  writeFileSync(join(DATA_PATH, filename), JSON.stringify(data), FILE_ENCODING)
+}
+
+export const createFile = async (filename: string, data: string) => {
+  await writeFile(getFilePath(filename), data, "utf-8")
+}
+
+export const addToFile = async (filename: string, data: string) => {
+  await appendFile(getFilePath(filename), data, FILE_ENCODING)
+}
+
+export const fileExists = async (filename: string): Promise<boolean> => {
+  try {
+    await access(getFilePath(filename))
+    return true
+  } catch (error) {
+    console.error(error)
+    return false
+  }
 }

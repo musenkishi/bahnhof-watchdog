@@ -15,7 +15,7 @@ export const loadBuffer = async () => {
       return new Map(parsedData)
     } else {
       console.error(
-        `Unexpected data format: expected an array but got ${typeof parsedData}`
+        `Unexpected data format: expected an array but got ${typeof parsedData}. Creating new buffer...`
       )
       return new Map()
     }
