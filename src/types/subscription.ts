@@ -1,4 +1,4 @@
 export type Subscription = {
-  name: string
+  speed: string
   price: number
 }

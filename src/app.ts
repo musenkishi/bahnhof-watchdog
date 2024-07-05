@@ -14,8 +14,8 @@ import cronstrue from "cronstrue"
 dotenv.config()
 const CRON_SCHEDULE = process.env.CRON_SCHEDULE
 
-const currentSubscription = {
-  name: process.env.CURRENT_PRODUCT,
+const currentSubscription: Subscription = {
+  speed: process.env.CURRENT_SPEED,
   price: Number.parseInt(process.env.CURRENT_PRICE),
 }
 
@@ -57,7 +57,7 @@ const doPatrol = async (callback: (report: string) => void) => {
         getProducts(process.env.ADDRESS, (result) => {
           const listedSubscription = getListedSubscription(
             result.data.products,
-            currentSubscription.name
+            currentSubscription.speed
           )
 
           if (!listedSubscription) {
