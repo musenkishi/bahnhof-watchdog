@@ -1,21 +1,23 @@
+import cronstrue from "cronstrue"
 import dotenv from "dotenv"
-import { getProducts, getOperations, sendWebhook } from "./api/api"
+import cron from "node-cron"
+import { getOperations, getProducts, sendWebhook } from "./api/api"
 import { sendMail } from "./api/mail"
+import { Subscription } from "./types/subscription"
+import { handleBuffer } from "./util/buffer"
+import { logPrice } from "./util/log"
 import {
   generateOutageMessage,
   generateSubscriptionMessage,
 } from "./util/message"
 import { findProductAndConvertWithReduce as getListedSubscription } from "./util/product"
-import cron from "node-cron"
-import { handleBuffer } from "./util/buffer"
-import cronstrue from "cronstrue"
 
 //Load variables from .env file
 dotenv.config()
 const CRON_SCHEDULE = process.env.CRON_SCHEDULE
 
-const currentSubscription = {
-  name: process.env.CURRENT_PRODUCT,
+const currentSubscription: Subscription = {
+  speed: process.env.CURRENT_SPEED,
   price: Number.parseInt(process.env.CURRENT_PRICE),
 }
 
@@ -57,7 +59,7 @@ const doPatrol = async (callback: (report: string) => void) => {
         getProducts(process.env.ADDRESS, (result) => {
           const listedSubscription = getListedSubscription(
             result.data.products,
-            currentSubscription.name
+            currentSubscription.speed
           )
 
           if (!listedSubscription) {
@@ -67,6 +69,9 @@ const doPatrol = async (callback: (report: string) => void) => {
           }
 
           if (listedSubscription.price < currentSubscription.price) {
+            if (process.env.LOG_PRICES == "true") {
+              logPrice(currentSubscription, listedSubscription)
+            }
             const message = generateSubscriptionMessage(
               currentSubscription,
               listedSubscription

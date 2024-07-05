@@ -7,7 +7,7 @@ export const findProductAndConvertWithReduce = (
 ): Subscription | null => {
   return products.reduce<Subscription | null>((acc, product) => {
     if (acc === null && product.internalTitle.includes(searchString)) {
-      return { name: product.title, price: product.price }
+      return { speed: product.title, price: product.price }
     }
     return acc
   }, null)
