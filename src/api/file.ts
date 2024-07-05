@@ -1,5 +1,5 @@
-import { constants, writeFileSync } from "fs"
-import { access, mkdir, readFile } from "fs/promises"
+import { constants, writeFileSync } from "node:fs"
+import { access, mkdir, readFile } from "node:fs/promises"
 import { join } from "path"
 
 const DATA_PATH = "data"
