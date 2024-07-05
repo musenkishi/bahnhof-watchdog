@@ -28,7 +28,7 @@ CURRENT_PRICE="500"
 LOG_PRICES=true # log price changes in a csv file
 
 # Notifications
-WEBHOOK_URL="https://..." # Only tested with Discord Webhook bot
+WEBHOOK_URL="https://your-webhook-url" # Only tested with Discord Webhook bot
 
 # Mail uses nodemailer set to gmail.
 # Optional to use but needs all 3 values to work.
@@ -44,6 +44,7 @@ MAIL_RECEIVER="example.receiver@gmail.com"
 1. **Create a `.env` file** in a directory of your choice and add your environment variables as described above.
 
 2. **Create a `docker-compose.yml` file** in the same directory with the following content:
+
     ```yaml
     services:
       bahnhof-watchdog:
@@ -61,6 +62,7 @@ MAIL_RECEIVER="example.receiver@gmail.com"
     ```
 
 3. **Run the Docker Compose stack**:
+
     ```bash
     docker-compose up -d
     ```
@@ -72,6 +74,7 @@ MAIL_RECEIVER="example.receiver@gmail.com"
 1. **Create a `.env` file** in a directory of your choice and add your environment variables as described above.
 
 2. **Run the Docker container**:
+
     ```bash
     docker run --env-file .env musenkishi/bahnhof-watchdog:latest
     ```
@@ -79,19 +82,22 @@ MAIL_RECEIVER="example.receiver@gmail.com"
 #### Building the Image Locally
 
 1. **Clone the repository**:
+
     ```bash
-    git clone https://github.com/yourusername/bahnhof-watchdog.git
+    git clone https://github.com/musenkishi/bahnhof-watchdog.git
     cd bahnhof-watchdog
     ```
 
 2. **Create a `.env` file** in the root directory and add your environment variables as described above.
 
 3. **Build the Docker image**:
+
     ```bash
     docker build -t bahnhof-watchdog .
     ```
 
 4. **Run the Docker container**:
+
     ```bash
     docker run --env-file .env bahnhof-watchdog
     ```
@@ -99,21 +105,30 @@ MAIL_RECEIVER="example.receiver@gmail.com"
 ### Running Locally
 
 1. **Clone the repository**:
+
     ```bash
-    git clone https://github.com/yourusername/bahnhof-watchdog.git
+    git clone https://github.com/musenkishi/bahnhof-watchdog.git
     cd bahnhof-watchdog
     ```
 
 2. **Install dependencies**:
+
     ```bash
     npm install
     ```
 
 3. **Create a `.env` file** in the root directory and add your environment variables as described above.
 
-4. **Run the service**:
+4. **Build the project**
+
     ```bash
-    node index.js
+    tsc
+    ```
+
+5. **Run the service**:
+
+    ```bash
+    node dist/app.js
     ```
 
 ## Usage
@@ -124,20 +139,23 @@ The service runs based on the interval set in the `CRON_SCHEDULE` environment va
 
 ### Discord Webhook
 
-Ensure `WEBHOOK_URL` is set to your Discord webhook URL:
+Ensure `WEBHOOK_URL` is set to your Discord webhook URL. Guide is available on [Discord's support site](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks):
+
 ```bash
-WEBHOOK_URL=https://your-discord-webhook-url
+WEBHOOK_URL=https://your-webhook-url
 ```
 
 ### Email
 
 To use email notifications, all three of the following variables need to be set:
+
 ```bash
 MAIL_SENDER="your.sender@gmail.com"
 MAIL_SENDER_PASS="yourpassword"
 MAIL_RECEIVER="your.receiver@gmail.com"
 ```
-These values will configure the service to use Gmail through Nodemailer for sending email notifications.
+
+These values will configure the service to use Gmail through Nodemailer for sending email notifications. Guide is available [here](https://nodemailer.com/usage/using-gmail/).
 
 ## Contributing
 
