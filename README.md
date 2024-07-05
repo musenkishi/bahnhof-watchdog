@@ -1,5 +1,7 @@
 # Bahnhof Watchdog
 
+![](assets/bwatchdog.svg)
+
 Bahnhof Watchdog is a Node.js service that periodically checks for current and planned outages in your area from the ISP named Bahnhof. It also checks if your current subscription is priced higher than what is listed on their website. Notifications are sent via a Discord webhook or via email (Gmail only) if any issues are found.
 
 ## Features
