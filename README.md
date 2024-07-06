@@ -15,6 +15,10 @@ Bahnhof Watchdog is a Node.js service that periodically checks for current and p
 Before running the service, you'll need to set up the following environment variables:
 
 ```bash
+# Uncomment and set these variables if you are mounting a volume for the data directory.
+# PUID=1000
+# PGID=1000
+
 # Runs every hour. crontab.cronhub.io can be used to generate another interval
 CRON_SCHEDULE="0 * * * *" 
 
@@ -50,6 +54,7 @@ MAIL_RECEIVER="example.receiver@gmail.com"
     ```yaml
     services:
       bahnhof-watchdog:
+        container_name: bahnhof-watchdog
         image: musenkishi/bahnhof-watchdog:latest
         ports:
           - 3000:3000

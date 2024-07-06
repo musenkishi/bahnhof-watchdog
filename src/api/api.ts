@@ -178,11 +178,13 @@ export const getOperations = (
 export const sendWebhook = async (message: string) => {
   const turndownService = new TurndownService({ headingStyle: "atx" })
   const webhookUrl = process.env.WEBHOOK_URL
-  console.log(
-    webhookUrl
-      ? "Sending webhook"
-      : "Environment variable WEBHOOK_URL missing. Skipping sending webhook..."
-  )
+  if (!webhookUrl) {
+    console.log(
+      "Environment variable WEBHOOK_URL missing. Skipping sending webhook..."
+    )
+    return
+  }
+  console.log("Sending webhook:", message)
   try {
     await api.post(
       webhookUrl,

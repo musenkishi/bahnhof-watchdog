@@ -1,5 +1,6 @@
 services:
   bahnhof-watchdog:
+    container_name: bahnhof-watchdog
     image: musenkishi/bahnhof-watchdog:latest
     ports:
       - 3000:3000
