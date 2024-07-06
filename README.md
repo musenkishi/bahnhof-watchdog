@@ -56,8 +56,6 @@ MAIL_RECEIVER="example.receiver@gmail.com"
       bahnhof-watchdog:
         container_name: bahnhof-watchdog
         image: musenkishi/bahnhof-watchdog:latest
-        ports:
-          - 3000:3000
         volumes:
           - data:/data
         restart: unless-stopped
