@@ -5,6 +5,10 @@ import { getOperations, getProducts, sendWebhook } from "./api/api"
 import { sendMail } from "./api/mail"
 import { Subscription } from "./types/subscription"
 import { handleBuffer } from "./util/buffer"
+import {
+  getMissingOutageVariables,
+  getMissingSubscriptionVariables,
+} from "./util/env"
 import { logPrice } from "./util/log"
 import {
   generateOutageMessage,
@@ -14,7 +18,6 @@ import { findProductAndConvertWithReduce as getListedSubscription } from "./util
 
 //Load variables from .env file
 dotenv.config()
-const CRON_SCHEDULE = process.env.CRON_SCHEDULE
 
 const currentSubscription: Subscription = {
   speed: process.env.CURRENT_SPEED,
@@ -26,9 +29,12 @@ const doPatrol = async (callback: (report: string) => void) => {
 
   const zonePromises = []
 
-  if (!process.env.POSTAL_CODE) {
+  const missingOutageParams = getMissingOutageVariables()
+
+  if (missingOutageParams.length > 0) {
     console.info(
-      "Environment variable POSTAL_CODE missing. Skipping outages check..."
+      "Skipping outages check. Following environment variables are missing:",
+      missingOutageParams.join(", ")
     )
   } else {
     zonePromises.push(
@@ -49,9 +55,12 @@ const doPatrol = async (callback: (report: string) => void) => {
     )
   }
 
-  if (!process.env.ADDRESS) {
+  const missingSubscriptionVars = getMissingSubscriptionVariables()
+
+  if (missingSubscriptionVars.length > 0) {
     console.info(
-      "Environment variable ADDRESS missing. Skipping subscription price check..."
+      "Skipping subscription check. Following environment variables are missing:",
+      missingSubscriptionVars.join(", ")
     )
   } else {
     zonePromises.push(
@@ -104,9 +113,11 @@ const sendReport = (report: string, skipBuffer?: boolean) => {
   }
 }
 
+const CRON_SCHEDULE = process.env.CRON_SCHEDULE
+
 if (CRON_SCHEDULE) {
   const startMessage =
-    "Watchdog will start patrolling with an interval of " +
+    "Watchdog will start patrolling with the following interval: " +
     cronstrue.toString(CRON_SCHEDULE).toLowerCase()
   console.log(startMessage)
   if (process.env.SEND_STARTUP_MESSAGE == "true") {
@@ -118,7 +129,9 @@ if (CRON_SCHEDULE) {
     })
   })
 } else {
-  // no cron schedule set, run patrol once if possible
+  console.info(
+    "Missing CRON_SCHEDULE environment variable. Only running patrol once..."
+  )
   doPatrol((report) => {
     sendReport(report)
   })

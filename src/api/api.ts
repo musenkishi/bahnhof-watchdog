@@ -3,6 +3,7 @@ import TurndownService from "turndown"
 import { NetworkResponse } from "../types/network"
 import { OperationsResponse } from "../types/operation"
 import { Network as MinimalNetwork, ProductsResponse } from "../types/product"
+import { findToken, getSessionId } from "../util/credential"
 
 const api = axios.create({
   timeout: 30000,
@@ -14,33 +15,6 @@ const tokenUrl = new URL("kundservice/driftinfo", baseUrl).toString()
 const apiOperationsUrl = new URL("kundservice/driftinfo", apiBaseUrl).toString()
 const apiNetworksUrl = new URL("search/networks", apiBaseUrl).toString()
 const apiProductsUrl = new URL("bredband/products", apiBaseUrl).toString()
-
-const getSessionId = (cookies: string[]) => {
-  const splitCookies = cookies.map((cookieString) => {
-    const pairs = cookieString.split(";")
-    const splittedPairs = pairs.map((cookie) => cookie.split("="))
-    const obj = Object.fromEntries(splittedPairs)
-    return obj
-  })
-  const sessionCookie = splitCookies.find((cookies) => cookies.PHPSESSID)
-  return sessionCookie.PHPSESSID || false
-}
-
-const findToken = (data: any) => {
-  const tokenName = "csrf-token"
-  const regex = new RegExp(`<meta[^>]*name=["']?${tokenName}["']?[^>]*>`, "i")
-  const match = data.match(regex)
-
-  const tokenTag = match && match[0]
-  if (!tokenTag) return
-
-  const contentRegex = /content=["']([^"']*)["']/i
-  const contentMatch = tokenTag.match(contentRegex)
-
-  const token = contentMatch && contentMatch[1]
-  if (!token) return
-  return token
-}
 
 const getTokens = async (
   url: string,
