@@ -28,9 +28,9 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
-      - name: Build and push Docker image
+      - name: Build and optionally push Docker image
         uses: docker/build-push-action@v5
         with:
-          push: true
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }} # Only push if it's a push event to main
           tags: musenkishi/bahnhof-watchdog:latest
           platforms: linux/amd64,linux/arm64
