@@ -105,11 +105,6 @@ const sendReport = (report: string, skipBuffer?: boolean) => {
 }
 
 if (CRON_SCHEDULE) {
-  cron.schedule(CRON_SCHEDULE, () => {
-    doPatrol((report) => {
-      sendReport(report)
-    })
-  })
   const startMessage =
     "Watchdog will start patrolling with an interval of " +
     cronstrue.toString(CRON_SCHEDULE).toLowerCase()
@@ -117,6 +112,11 @@ if (CRON_SCHEDULE) {
   if (process.env.SEND_STARTUP_MESSAGE == "true") {
     sendReport(startMessage, true)
   }
+  cron.schedule(CRON_SCHEDULE, () => {
+    doPatrol((report) => {
+      sendReport(report)
+    })
+  })
 } else {
   // no cron schedule set, run patrol once if possible
   doPatrol((report) => {

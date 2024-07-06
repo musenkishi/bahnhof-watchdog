@@ -5,6 +5,7 @@ import {
   mkdir,
   readFile,
   writeFile,
+  constants,
 } from "node:fs/promises"
 import { join } from "path"
 
@@ -22,7 +23,7 @@ export const loadFile = async (filename: string) => {
 
   const filePath = getFilePath(filename)
 
-  fileExists(filename).then((exists) => {
+  await fileExists(filename).then((exists) => {
     if (!exists) {
       try {
         writeFileSync(filePath, "", FILE_ENCODING)
@@ -57,7 +58,7 @@ export const addToFile = async (filename: string, data: string) => {
 
 export const fileExists = async (filename: string): Promise<boolean> => {
   try {
-    await access(getFilePath(filename))
+    await access(getFilePath(filename), constants.R_OK | constants.W_OK)
     return true
   } catch (error) {
     console.error(error)
