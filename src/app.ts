@@ -15,9 +15,12 @@ import {
   generateSubscriptionMessage,
 } from "./util/message"
 import { findProductAndConvertWithReduce as getListedSubscription } from "./util/product"
+import { checkVersion } from "./util/version"
 
 //Load variables from .env file
 dotenv.config()
+
+checkVersion()
 
 const currentSubscription: Subscription = {
   speed: process.env.CURRENT_SPEED,
