@@ -65,7 +65,7 @@ const doPatrol = async (callback: (report: string) => void) => {
   } else {
     zonePromises.push(
       new Promise<void>((resolve, reject) => {
-        getProducts(process.env.ADDRESS, (result) => {
+        getProducts(process.env.ADDRESS, async (result) => {
           const listedSubscription = getListedSubscription(
             result.data.products,
             currentSubscription.speed
@@ -79,7 +79,7 @@ const doPatrol = async (callback: (report: string) => void) => {
 
           if (listedSubscription.price < currentSubscription.price) {
             if (process.env.LOG_PRICES == "true") {
-              logPrice(currentSubscription, listedSubscription)
+              await logPrice(currentSubscription, listedSubscription)
             }
             const message = generateSubscriptionMessage(
               currentSubscription,
