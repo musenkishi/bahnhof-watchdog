@@ -4,7 +4,7 @@ const FILENAME_BUFFER = "watchdog_buffer.json"
 const MAX_BUFFER_SIZE = 20 // No need to store more than this
 
 export const syncBuffer = (buffer: Map<string, unknown>) => {
-  syncFile(FILENAME_BUFFER, [...buffer])
+  syncFile(FILENAME_BUFFER, JSON.stringify([...buffer]))
 }
 
 export const loadBuffer = async () => {
@@ -14,9 +14,12 @@ export const loadBuffer = async () => {
     if (Array.isArray(parsedData)) {
       return new Map(parsedData)
     } else {
-      console.error(
-        `Unexpected data format: expected an array but got ${typeof parsedData}. Creating new buffer...`
-      )
+      const isNewMap = typeof parsedData == "string" && parsedData.length == 0
+      if (!isNewMap) {
+        console.error(
+          `Unexpected data format: expected an array but got ${typeof parsedData}. Creating new buffer...`
+        )
+      }
       return new Map()
     }
   } catch (err) {

@@ -154,7 +154,7 @@ export const sendWebhook = async (message: string) => {
   const webhookUrl = process.env.WEBHOOK_URL
   if (!webhookUrl) {
     console.log(
-      "Environment variable WEBHOOK_URL missing. Skipping sending webhook..."
+      "Not sending webhook. Environment variable WEBHOOK_URL is missing."
     )
     return
   }
