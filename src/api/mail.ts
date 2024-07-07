@@ -1,16 +1,21 @@
 import nodemailer from "nodemailer"
 import { MailOptions } from "nodemailer/lib/json-transport"
+import { getMissingMailVariables } from "../util/env"
 
 export const sendMail = (report: string) => {
-  const sender = process.env.MAIL_SENDER
-  const senderPassword = process.env.MAIL_SENDER_PASS
-  const receiver = process.env.MAIL_RECEIVER
-  if (!sender || !senderPassword || !receiver) {
-    console.log(
-      "Environment variables MAIL_SENDER, MAIL_SENDER_PASS, and MAIL_RECEIVER missing. Skipping sending mail..."
+  const missingEnvironmentVariables = getMissingMailVariables()
+  if (missingEnvironmentVariables.length > 0) {
+    console.info(
+      "Skipping mail. Following environment variables are missing:",
+      missingEnvironmentVariables.join(", ")
     )
     return
   }
+
+  const sender = process.env.MAIL_SENDER
+  const senderPassword = process.env.MAIL_SENDER_PASS
+  const receiver = process.env.MAIL_RECEIVER
+
   console.log("Sending mail")
 
   const transporter = nodemailer.createTransport({

@@ -17,6 +17,9 @@ COPY --from=build /usr/src/app/package*.json ./
 COPY --from=build /usr/src/app/node_modules ./node_modules
 COPY --from=build /usr/src/app/dist ./
 
+# Create /data directory
+RUN mkdir -p /data
+
 # Create symbolic link for easier volume mount
 RUN ln -sfn /data /usr/src/app/data
 
