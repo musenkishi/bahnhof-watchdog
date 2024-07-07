@@ -1,0 +1,12 @@
+services:
+  bahnhof-watchdog:
+    container_name: bahnhof-watchdog
+    image: musenkishi/bahnhof-watchdog:latest
+    volumes:
+      - data:/data
+    restart: unless-stopped
+    env_file:
+      - .env
+
+volumes:
+  data:
