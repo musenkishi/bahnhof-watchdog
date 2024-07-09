@@ -1,8 +1,9 @@
 import axios from "axios"
 import TurndownService from "turndown"
-import { NetworkResponse } from "../types/network"
-import { OperationsResponse } from "../types/operation"
-import { Network as MinimalNetwork, ProductsResponse } from "../types/product"
+import { ApiResponse } from "../types/api"
+import { NetworkData } from "../types/network"
+import { OperationsData } from "../types/operation"
+import { ProductNetwork, ProductsData } from "../types/product"
 import { findToken, getSessionId } from "../util/credential"
 
 const api = axios.create({
@@ -36,7 +37,7 @@ const getOperationsStatus = async (
   url: string,
   token: string,
   sessionId: string,
-  callback: (operations: OperationsResponse) => void
+  callback: (operations: OperationsData) => void
 ) => {
   try {
     const response = await api.get(url, {
@@ -46,7 +47,12 @@ const getOperationsStatus = async (
         "X-Requested-With": "XMLHttpRequest",
       },
     })
-    callback(response.data)
+    const data: ApiResponse<OperationsData> = response.data
+    if (data.status != "ok") {
+      console.error("Could not get outage data:", JSON.stringify(data))
+    } else {
+      callback(data.data)
+    }
   } catch (err) {
     console.error(err)
   }
@@ -57,7 +63,7 @@ const getAvailableNetworks = async (
   address: string,
   token: string,
   sessionId: string,
-  callback: (response: NetworkResponse) => void
+  callback: (response: NetworkData) => void
 ) => {
   try {
     const response = await api.post(
@@ -73,7 +79,30 @@ const getAvailableNetworks = async (
         },
       }
     )
-    callback(response.data)
+
+    const data: ApiResponse<NetworkData> = response.data
+
+    if (data.status != "ok") {
+      console.error("Could not get outage data:", JSON.stringify(data))
+    } else {
+      switch (data.data.type) {
+        case "DEFAULT":
+          callback(data.data)
+          break
+
+        case "EMPTY_NETWORK":
+        case "COVERAGE_NOT_FOUND":
+          console.error(
+            "Could not find any networks available for address:",
+            address
+          )
+          break
+
+        default:
+          console.log("Unhandled network list type:", data.data.type)
+          break
+      }
+    }
   } catch (err) {
     console.error(err)
   }
@@ -81,10 +110,10 @@ const getAvailableNetworks = async (
 
 const getAvailableProducts = async (
   url: string,
-  networks: MinimalNetwork[],
+  networks: ProductNetwork[],
   token: string,
   sessionId: string,
-  callback: (response: ProductsResponse) => void
+  callback: (response: ProductsData) => void
 ) => {
   try {
     const response = await api.post(
@@ -100,7 +129,12 @@ const getAvailableProducts = async (
         },
       }
     )
-    callback(response.data)
+    const data: ApiResponse<ProductsData> = response.data
+    if (data.status != "ok") {
+      console.error("Could not get available products:", JSON.stringify(data))
+    } else {
+      callback(data.data)
+    }
   } catch (err) {
     console.error(err)
   }
@@ -108,7 +142,7 @@ const getAvailableProducts = async (
 
 export const getProducts = (
   address: string,
-  callback: (response: ProductsResponse) => void
+  callback: (response: ProductsData) => void
 ) => {
   getTokens(tokenUrl, (csrfToken: string, cookieSession: string) => {
     getAvailableNetworks(
@@ -116,8 +150,8 @@ export const getProducts = (
       address,
       csrfToken,
       cookieSession,
-      (response: NetworkResponse) => {
-        const minimalNetworks: MinimalNetwork[] = response.data.networks.map(
+      (data: NetworkData) => {
+        const productNetworks: ProductNetwork[] = data.networks.map(
           (network) => {
             return {
               city: network.city,
@@ -127,7 +161,7 @@ export const getProducts = (
         )
         getAvailableProducts(
           apiProductsUrl,
-          minimalNetworks,
+          productNetworks,
           csrfToken,
           cookieSession,
           (response) => {
@@ -141,7 +175,7 @@ export const getProducts = (
 
 export const getOperations = (
   postalCode: string,
-  callback: (operations: OperationsResponse) => void
+  callback: (operations: OperationsData) => void
 ) => {
   const apiUrl = apiOperationsUrl + "/" + postalCode
   getTokens(tokenUrl, (csrfToken: string, cookieSession: string) => {

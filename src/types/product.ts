@@ -29,7 +29,7 @@ export type Category = {
   hidden: boolean
 }
 
-export type Network = {
+export type ProductNetwork = {
   city: string
   network: string
 }
@@ -44,7 +44,7 @@ export type Product = {
   params: Param[]
   category: Category
   title: string
-  network: Network
+  network: ProductNetwork
   id: number
   internalTitle: string
   description: string
@@ -55,12 +55,7 @@ export type Product = {
   hidden: boolean
 }
 
-export type Data = {
+export type ProductsData = {
   products: Product[]
   hasOtherProducts: boolean
-}
-
-export type ProductsResponse = {
-  status: string
-  data: Data
 }
