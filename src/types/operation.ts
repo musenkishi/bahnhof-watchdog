@@ -10,12 +10,9 @@ export type Operation = {
   messages: Message[]
 }
 
-export type OperationsResponse = {
-  status: string
-  data: {
-    open: Operation[]
-    future: Operation[]
-    closed: Operation[]
-    all: Operation[]
-  }
+export type OperationsData = {
+  open: Operation[]
+  future: Operation[]
+  closed: Operation[]
+  all: Operation[]
 }

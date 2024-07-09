@@ -43,8 +43,8 @@ const doPatrol = async (callback: (report: string) => void) => {
     zonePromises.push(
       new Promise<void>((resolve, reject) => {
         getOperations(process.env.POSTAL_CODE, (operations) => {
-          const currentOutages = operations.data.open
-          const plannedOutages = operations.data.future
+          const currentOutages = operations.open
+          const plannedOutages = operations.future
           if (currentOutages.length > 0 || plannedOutages.length > 0) {
             const message = generateOutageMessage(
               currentOutages,
@@ -68,9 +68,9 @@ const doPatrol = async (callback: (report: string) => void) => {
   } else {
     zonePromises.push(
       new Promise<void>((resolve, reject) => {
-        getProducts(process.env.ADDRESS, async (result) => {
+        getProducts(process.env.ADDRESS, async (data) => {
           const listedSubscription = getListedSubscription(
-            result.data.products,
+            data.products,
             currentSubscription.speed
           )
 

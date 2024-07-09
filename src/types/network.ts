@@ -7,10 +7,7 @@ export type Network = {
   redirectUrl: string
 }
 
-export type NetworkResponse = {
-  status: string
-  data: {
-    type: string
-    networks: Network[]
-  }
+export type NetworkData = {
+  type: string
+  networks: Network[]
 }
