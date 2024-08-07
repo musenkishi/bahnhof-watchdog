@@ -1,35 +1,36 @@
-FROM node:20-alpine AS build
+FROM oven/bun:latest AS base
 WORKDIR /usr/src/app
-COPY package*.json ./
-RUN npm install
+
+# install dependencies into temp directory
+# this will cache them and speed up future builds
+FROM base AS install
+RUN mkdir -p /temp/dev
+COPY package.json bun.lockb /temp/dev/
+RUN cd /temp/dev && bun install --frozen-lockfile
+
+# install with --production (exclude devDependencies)
+RUN mkdir -p /temp/prod
+COPY package.json bun.lockb /temp/prod/
+RUN cd /temp/prod && bun install --frozen-lockfile --production
+
+# make node_modules readable for all users
+# see https://github.com/oven-sh/bun/issues/10331 why this is needed
+RUN chmod -R a+r /temp/prod/node_modules
+
+# copy node_modules from temp directory
+# then copy all (non-ignored) project files into the image
+FROM base AS prerelease
+COPY --from=install /temp/dev/node_modules node_modules
 COPY . .
-RUN npm run build
 
-# Production stage
-FROM node:20-alpine
-WORKDIR /usr/src/app
+ENV NODE_ENV=production
 
-# Install su-exec
-RUN apk add --no-cache su-exec
+# copy production dependencies and source code into final image
+FROM oven/bun:distroless AS release
+WORKDIR /
 
-# Copy only the necessary files from the build stage
-COPY --from=build /usr/src/app/package*.json ./
-COPY --from=build /usr/src/app/node_modules ./node_modules
-COPY --from=build /usr/src/app/dist ./
+COPY --from=install /temp/prod/node_modules node_modules
+COPY --from=prerelease /usr/src/app/src .
+COPY --from=prerelease /usr/src/app/package.json .
 
-# Create /data directory
-RUN mkdir -p /data
-
-# Create symbolic link for easier volume mount
-RUN ln -sfn /data /usr/src/app/data
-
-# Define environment variables for user and group IDs (optional)
-ENV PUID=
-ENV PGID=
-
-# Copy entrypoint script
-COPY docker-entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
-
-ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["node", "app.js"]
+ENTRYPOINT [ "bun", "run", "app.ts", "--target=node" ]

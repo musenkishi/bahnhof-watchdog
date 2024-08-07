@@ -1,10 +1,10 @@
-import { loadFile, syncFile } from "../api/file"
+import { loadFile, writeFile } from "../api/file"
 
 const FILENAME_BUFFER = "watchdog_buffer.json"
 const MAX_BUFFER_SIZE = 20 // No need to store more than this
 
 export const syncBuffer = (buffer: Map<string, unknown>) => {
-  syncFile(FILENAME_BUFFER, JSON.stringify([...buffer]))
+  writeFile(FILENAME_BUFFER, JSON.stringify([...buffer]))
 }
 
 export const loadBuffer = async () => {

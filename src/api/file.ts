@@ -1,12 +1,4 @@
-import { writeFileSync } from "node:fs"
-import {
-  access,
-  appendFile,
-  constants,
-  mkdir,
-  readFile,
-  writeFile,
-} from "node:fs/promises"
+import { access, appendFile, constants, mkdir } from "node:fs/promises"
 import { join } from "path"
 
 const DATA_PATH = "data"
@@ -27,7 +19,7 @@ export const loadFile = async (filename: string) => {
   await fileExists(filename).then((exists) => {
     if (!exists) {
       try {
-        createFile(filename, "")
+        writeFile(filename, "")
       } catch (err) {
         console.error("Error creating file", err.message)
       }
@@ -35,7 +27,7 @@ export const loadFile = async (filename: string) => {
   })
 
   try {
-    const data = await readFile(filePath, FILE_ENCODING)
+    const data = await Bun.file(filePath).text()
     return data
   } catch (err) {
     console.error(`Error reading file: ${err.message}`)
@@ -43,14 +35,9 @@ export const loadFile = async (filename: string) => {
   }
 }
 
-export const syncFile = (filename: string, data: string) => {
-  console.log("Syncing file", filename, "to", getFilePath(filename))
-  writeFileSync(join(DATA_PATH, filename), data, FILE_ENCODING)
-}
-
-export const createFile = async (filename: string, data: string) => {
+export const writeFile = async (filename: string, data: string) => {
   console.log("Creating file", filename, "...")
-  await writeFile(getFilePath(filename), data, "utf-8")
+  await Bun.write(getFilePath(filename), data)
 }
 
 export const addToFile = async (filename: string, data: string) => {
