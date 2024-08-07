@@ -1,4 +1,4 @@
-import { addToFile, createFile, fileExists, loadFile } from "../api/file"
+import { addToFile, writeFile, fileExists, loadFile } from "../api/file"
 import { LogSubscription } from "../types/log"
 import { Subscription } from "../types/subscription"
 
@@ -29,7 +29,7 @@ export const logPrice = async (
 
   if (!fileExist) {
     const header = ["Speed", "Address", "Current Price", "Listed Price", "Date"]
-    await createFile(LOG_PRICE_FILENAME, header.join(CSV_SEPARATOR) + "\n")
+    await writeFile(LOG_PRICE_FILENAME, header.join(CSV_SEPARATOR) + "\n")
   } else {
     // Check for duplicates
     const fileContent = await loadFile(LOG_PRICE_FILENAME)

@@ -4,7 +4,7 @@
 
 # Bahnhof Watchdog
 
-Bahnhof Watchdog is a Node.js service that periodically checks for current and planned outages in your area from the ISP named Bahnhof. It also checks if your current subscription is priced higher than what is listed on their website. Notifications are sent via a Discord webhook or via email (Gmail only) if any issues are found.
+Bahnhof Watchdog is a Bun-based background service that periodically checks for current and planned outages in your area from the ISP named Bahnhof. It also checks if your current subscription is priced higher than what is listed on their website. Notifications are sent through a Discord webhook or by email (Gmail only) if any issues are found.
 
 ## Features
 
@@ -58,6 +58,7 @@ MAIL_RECEIVER="example.receiver@gmail.com"
       bahnhof-watchdog:
         container_name: bahnhof-watchdog
         image: musenkishi/bahnhof-watchdog:latest
+        user: ${PUID}:${PGID} # optional
         volumes:
           - data:/data
         restart: unless-stopped
@@ -84,6 +85,10 @@ MAIL_RECEIVER="example.receiver@gmail.com"
 
     ```bash
     docker run --env-file .env musenkishi/bahnhof-watchdog:latest
+    ```
+3. **Alternative: Run with specific user/group**
+    ```bash
+    docker run --user 1000:1000 --env-file .env musenkishi/bahnhof-watchdog:latest
     ```
 
 #### Building the Image Locally
@@ -121,21 +126,15 @@ MAIL_RECEIVER="example.receiver@gmail.com"
 2. **Install dependencies**:
 
     ```bash
-    npm install
+    bun install
     ```
 
 3. **Create a `.env` file** in the root directory and add your environment variables as described above.
 
-4. **Build the project**
+4. **Run the service**:
 
     ```bash
-    tsc
-    ```
-
-5. **Run the service**:
-
-    ```bash
-    node dist/app.js
+    bun start
     ```
 
 ## Usage

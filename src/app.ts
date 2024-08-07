@@ -1,6 +1,5 @@
 import cronstrue from "cronstrue"
-import dotenv from "dotenv"
-import cron from "node-cron"
+import { CronJob } from "cron"
 import { getOperations, getProducts, sendWebhook } from "./api/api"
 import { sendMail } from "./api/mail"
 import { Subscription } from "./types/subscription"
@@ -16,9 +15,6 @@ import {
 } from "./util/message"
 import { findProductAndConvertWithReduce as getListedSubscription } from "./util/product"
 import { checkVersion } from "./util/version"
-
-//Load variables from .env file
-dotenv.config()
 
 checkVersion()
 
@@ -126,11 +122,15 @@ if (CRON_SCHEDULE) {
   if (process.env.SEND_STARTUP_MESSAGE == "true") {
     sendReport(startMessage, true)
   }
-  cron.schedule(CRON_SCHEDULE, () => {
-    doPatrol((report) => {
-      sendReport(report)
-    })
-  })
+  const job = new CronJob(
+    CRON_SCHEDULE,
+    () => {
+      doPatrol((report) => {
+        sendReport(report)
+      })
+    },
+  )
+  job.start()
 } else {
   console.info(
     "Missing CRON_SCHEDULE environment variable. Only running patrol once..."

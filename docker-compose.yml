@@ -2,6 +2,7 @@ services:
   bahnhof-watchdog:
     container_name: bahnhof-watchdog
     image: musenkishi/bahnhof-watchdog:latest
+    user: ${PUID}:${PGID} # optional
     volumes:
       - data:/data
     restart: unless-stopped
