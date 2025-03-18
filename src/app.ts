@@ -15,8 +15,13 @@ import {
 } from "./util/message"
 import { findProductAndConvertWithReduce as getListedSubscription } from "./util/product"
 import { checkVersion } from "./util/version"
+import { printMessage } from "./api/console"
 
-checkVersion()
+checkVersion((reports) => {
+  reports.forEach((report) => {
+    sendReport(report.message, report.important)
+  })
+})
 
 const currentSubscription: Subscription = {
   speed: process.env.CURRENT_SPEED,
@@ -99,6 +104,7 @@ const sendReport = (report: string, skipBuffer?: boolean) => {
   if (!report) return
 
   const sendMessage = (message: string) => {
+    printMessage(message)
     sendWebhook(message)
     sendMail(message)
   }
@@ -122,14 +128,11 @@ if (CRON_SCHEDULE) {
   if (process.env.SEND_STARTUP_MESSAGE == "true") {
     sendReport(startMessage, true)
   }
-  const job = new CronJob(
-    CRON_SCHEDULE,
-    () => {
-      doPatrol((report) => {
-        sendReport(report)
-      })
-    },
-  )
+  const job = new CronJob(CRON_SCHEDULE, () => {
+    doPatrol((report) => {
+      sendReport(report)
+    })
+  })
   job.start()
 } else {
   console.info(
