@@ -1,4 +1,4 @@
-FROM oven/bun:latest AS base
+FROM oven/bun:1.2 AS base
 WORKDIR /usr/src/app
 
 # install dependencies into temp directory
@@ -26,7 +26,7 @@ COPY . .
 ENV NODE_ENV=production
 
 # copy production dependencies and source code into final image
-FROM oven/bun:distroless AS release
+FROM oven/bun:1.2-distroless AS release
 WORKDIR /
 
 COPY --from=install /temp/prod/node_modules node_modules
