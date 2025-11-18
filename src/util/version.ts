@@ -2,7 +2,7 @@ import { semver } from "bun"
 import { loadFile, writeFile } from "../api/file"
 
 const FILENAME_VERSION = ".version"
-const VERSION = "1.2.0"
+const VERSION = "1.3.0"
 
 export type VersionReport = {
   message: string
@@ -23,6 +23,17 @@ export const checkVersion = async (
       reports.push({
         message:
           "🎉 New feature in 1.2.0: Reports will now be printed in console. Opt out by using the environment variable: SUPPRESS_CONSOLE_REPORTS=true",
+      })
+    }
+    if (
+      semver.satisfies(existingVerFile, "<1.3.0") &&
+      semver.satisfies(VERSION, "^1.3.x")
+    ) {
+      reports.push({
+        message:
+          `🔑 New feature in 1.3.0: 
+          You can now filter outage reports by keywords using the OUTAGE_KEYWORDS environment variable (comma-separated).
+          Example: OUTAGE_KEYWORDS=Uppsala, Kungsängen, Tullgarnsgatan`,
       })
     }
 

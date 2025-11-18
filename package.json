@@ -3,7 +3,7 @@
   "displayName": "Bahnhof Watchdog",
   "description": "A service that notifies you of changed subscription prices or scheduled/active downtime as listed by the ISP Bahnhof.",
   "author": "Freddie Lust-Hed",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "main": "dist/app.js",
   "license": "MIT",
   "scripts": {

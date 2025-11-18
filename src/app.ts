@@ -15,6 +15,7 @@ import {
 import { findProductAndConvertWithReduce as getListedSubscription } from "./util/product"
 import { checkVersion } from "./util/version"
 import { printMessage } from "./api/console"
+import { filterByKeywords } from "./util/outage"
 
 checkVersion((reports) => {
   reports.forEach((report) => {
@@ -43,8 +44,8 @@ const doPatrol = async (callback: (report: string) => void) => {
     zonePromises.push(
       new Promise<void>((resolve, reject) => {
         getOperations(process.env.POSTAL_CODE, (operations) => {
-          const currentOutages = operations.open
-          const plannedOutages = operations.future
+          const currentOutages = filterByKeywords(operations.open)
+          const plannedOutages = filterByKeywords(operations.future)
           if (currentOutages.length > 0 || plannedOutages.length > 0) {
             const message = generateOutageMessage(
               currentOutages,
