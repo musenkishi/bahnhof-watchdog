@@ -1,7 +1,6 @@
 import cronstrue from "cronstrue"
 import { CronJob } from "cron"
 import { getOperations, getProducts, sendWebhook } from "./api/api"
-import { sendMail } from "./api/mail"
 import { Subscription } from "./types/subscription"
 import { handleBuffer } from "./util/buffer"
 import {
@@ -106,7 +105,6 @@ const sendReport = (report: string, skipBuffer?: boolean) => {
   const sendMessage = (message: string) => {
     printMessage(message)
     sendWebhook(message)
-    sendMail(message)
   }
 
   if (skipBuffer) {

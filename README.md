@@ -4,13 +4,13 @@
 
 # Bahnhof Watchdog
 
-Bahnhof Watchdog is a Bun-based background service that periodically checks for current and planned outages in your area from the ISP named Bahnhof. It also checks if your current subscription is priced higher than what is listed on their website. Notifications are sent through a Discord webhook or by email (Gmail only) if any issues are found.
+Bahnhof Watchdog is a Bun-based background service that periodically checks for current and planned outages in your area from the ISP named Bahnhof. It also checks if your current subscription is priced higher than what is listed on their website. Notifications are logged and sent through a webhook if any issues are found.
 
 ## Features
 
 - **Outage Check**: Monitors for current and planned outages in your area based on your postal code.
 - **Price Check**: Compares your current subscription price with the listed price on Bahnhof's website.
-- **Notifications**: Sends notifications about outages or price discrepancies through a Discord webhook or an email.
+- **Notifications**: Sends notifications about outages or price discrepancies through a webhook.
 
 ## Environment Variables
 
@@ -37,12 +37,6 @@ LOG_PRICES=true # log price changes in a csv file
 
 # Notifications
 WEBHOOK_URL="https://your-webhook-url" # Only tested with Discord Webhook bot
-
-# Mail uses nodemailer set to gmail.
-# Optional to use but needs all 3 values to work.
-MAIL_SENDER="example.sender@gmail.com"
-MAIL_SENDER_PASS="examplepassword123"
-MAIL_RECEIVER="example.receiver@gmail.com"
 ```
 
 ## Setup
@@ -143,25 +137,13 @@ The service runs based on the interval set in the `CRON_SCHEDULE` environment va
 
 ## Notifications
 
-### Discord Webhook
+### Webhook (Discord tested)
 
 Ensure `WEBHOOK_URL` is set to your Discord webhook URL. Guide is available on [Discord's support site](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks):
 
 ```bash
 WEBHOOK_URL=https://your-webhook-url
 ```
-
-### Email
-
-To use email notifications, all three of the following variables need to be set:
-
-```bash
-MAIL_SENDER="your.sender@gmail.com"
-MAIL_SENDER_PASS="yourpassword"
-MAIL_RECEIVER="your.receiver@gmail.com"
-```
-
-These values will configure the service to use Gmail through Nodemailer for sending email notifications. Guide is available [here](https://nodemailer.com/usage/using-gmail/).
 
 ## Contributing
 
